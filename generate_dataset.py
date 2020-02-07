@@ -7,6 +7,7 @@ from torch.utils.data import Dataset
 from sklearn.model_selection import train_test_split
 import torch
 
+
 def generate_dataset():
     df = pd.read_csv(os.path.join(dataset_path, 'list_attr_celeba.csv'))
 
@@ -27,6 +28,24 @@ def generate_dataset():
     return data
 
 
+def generate_dataset1() -> dict:
+    df = pd.read_csv(os.path.join(dataset_path, 'list_attr_celeba.csv'))
+
+    d = {}
+    for index, row in df.iterrows():
+        r = row['image_id']
+        a = []
+        for key, value in row.items():
+            if value == 1:
+                a.append(key)
+        d[r] = set(a)
+    result = {}
+    for k, v in d.items():
+        result[k] = v
+
+    return result
+
+
 class TrainDataset(Dataset):
 
     def __init__(self):
@@ -38,7 +57,9 @@ class TrainDataset(Dataset):
 
     def __getitem__(self, index):
         img = np.array(
-            Image.open(os.path.join(dataset_path, 'img_align_celeba/img_align_celeba/{}'.format(self.data[index][0]))).resize([128, 128]))
+            Image.open(
+                os.path.join(dataset_path, 'img_align_celeba/img_align_celeba/{}'.format(self.data[index][0]))).resize(
+                [128, 128]))
         labels = self.data[index][1]
 
         img = np.transpose(img, (2, 0, 1))
@@ -46,4 +67,3 @@ class TrainDataset(Dataset):
         labels = labels.astype(np.float32)
         img_tensor = torch.Tensor(img).float()
         return img_tensor, labels
-

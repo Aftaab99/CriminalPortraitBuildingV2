@@ -2,7 +2,7 @@ import base64
 from flask import Flask
 
 from flask import request
-from generate_dataset import generate_dataset
+from generate_dataset import generate_dataset1
 from params import dataset_path
 import json
 import numpy as np
@@ -10,27 +10,22 @@ from PIL import Image
 from io import BytesIO
 import torch
 import pickle
-from torchvision.utils import save_image, make_grid
 
 main = Flask(__name__)
-
-with open('models/encoder_obj_latest.pkl', 'rb') as f:
-    text_enc = pickle.load(f)
+d = generate_dataset1()
 
 
-@main.route("/get_prediction", methods=['GET'])
+@main.route("/get_prediction", methods=['POST'])
 def get_prediction():
-    if request.method == "GET":
+    if request.method == "POST":
         # gets the string describing the features from the frontend
         # features = request.json['face_attributes']
         features = request.get_json(force=True)['face_attributes']
         # feature_str = generate_captions(set(features))
         # gets the numpy array from the model
-        np_arr = get_closest_image(features)
+        img = get_closest_image(features)
         # Creates PIL image using numpy array
-        img = Image.fromarray(np_arr)
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
+
         # creates a json object with base64 string
         data = {}
         data['generated_image'] = str(to_base64(img))
@@ -67,7 +62,7 @@ def get_closest_image(attrs: list):
     import os
     s1 = set(attrs)
 
-    d = generate_dataset()
+    global d
     cur_max_len = -1
     cur_best_image = None
     loop_run_c = 0
@@ -88,7 +83,7 @@ def get_closest_image(attrs: list):
     print(cur_best_image)
     print(loop_run_c)
     i = Image.open(os.path.join(dataset_path, cur_best_image))
-    i.save('test.png')
     return i
 
 
+main.run()
