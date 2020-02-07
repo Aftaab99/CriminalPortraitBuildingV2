@@ -2,7 +2,7 @@ import base64
 from flask import Flask
 
 from flask import request
-from generate_dataset import generate_captions, generate_dataset
+from generate_dataset import generate_dataset
 from params import dataset_path
 import json
 import numpy as np
